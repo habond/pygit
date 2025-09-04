@@ -42,6 +42,7 @@ mypy src/
 ./pygit init
 ./pygit add file.txt  
 ./pygit commit -m "message"
+./pygit log
 ./pygit checkout <sha1>
 
 # Alternative: Direct Python execution
@@ -132,6 +133,7 @@ High-level command implementations:
 - `status` - Show working tree status  
 - `commit` - Create commits from staged files
 - `checkout` - Restore working directory from commits
+- `log` - Display commit history with messages and metadata
 - `hash-object`, `cat-file`, `write-tree`, `ls-tree`, `commit-tree` - Low-level operations
 
 ### 5. CLI Interface (`src/cli.py`)
@@ -150,6 +152,7 @@ Command-line argument parsing and dispatching:
 - Commit creation with tree and parent linking
 - Working directory status checking
 - Commit history navigation with checkout
+- Commit history viewing with log display
 
 ### ✅ Object Model
 - **Blobs**: File content storage
@@ -169,7 +172,7 @@ Command-line argument parsing and dispatching:
 
 ## Testing Strategy
 
-### Test Coverage: 47 tests across 5 test files
+### Test Coverage: 50 tests across 5 test files
 
 1. **Unit Tests** (`test_objects.py`, `test_index.py`, `test_repository.py`)
    - Individual function testing

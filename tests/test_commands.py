@@ -13,6 +13,7 @@ from src.commands import (
     status_command,
     commit_command,
     checkout_command,
+    log_command,
 )
 from src.repository import init_repository
 from src.objects import hash_object, read_object
@@ -221,3 +222,64 @@ def test_checkout_command_not_a_commit(initialized_repo: Path, sample_file: Path
     
     captured = capsys.readouterr()
     assert "is not a commit object" in captured.out
+
+
+def test_log_command_no_commits(initialized_repo: Path, capsys) -> None:
+    """Test log command with no commits."""
+    log_command()
+    
+    captured = capsys.readouterr()
+    assert "No commits found" in captured.out
+
+
+def test_log_command_single_commit(initialized_repo: Path, sample_file: Path, capsys) -> None:
+    """Test log command with single commit."""
+    # Create a commit
+    add_command(str(sample_file))
+    commit_command("Initial commit")
+    
+    # Clear previous output
+    capsys.readouterr()
+    
+    # Run log command
+    log_command()
+    
+    captured = capsys.readouterr()
+    assert "commit " in captured.out
+    assert "Author:" in captured.out
+    assert "Initial commit" in captured.out
+
+
+def test_log_command_multiple_commits(initialized_repo: Path, multiple_files: list[Path], capsys) -> None:
+    """Test log command with multiple commits showing history."""
+    # Create first commit
+    add_command(str(multiple_files[0]))
+    commit_command("First commit")
+    
+    # Create second commit  
+    add_command(str(multiple_files[1]))
+    commit_command("Second commit")
+    
+    # Clear previous output
+    capsys.readouterr()
+    
+    # Run log command
+    log_command()
+    
+    captured = capsys.readouterr()
+    
+    # Should show both commits, most recent first
+    lines = captured.out.split('\n')
+    commit_lines = [line for line in lines if line.startswith('commit ')]
+    
+    # Should have exactly 2 commits
+    assert len(commit_lines) == 2
+    
+    # Should contain both commit messages
+    assert "Second commit" in captured.out
+    assert "First commit" in captured.out
+    
+    # Most recent commit should appear first
+    first_commit_pos = captured.out.find("First commit")
+    second_commit_pos = captured.out.find("Second commit")
+    assert second_commit_pos < first_commit_pos

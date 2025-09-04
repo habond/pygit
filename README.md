@@ -16,6 +16,7 @@ A basic Git implementation in Python built for educational purposes. This projec
 - **Status checking** (`status`)
 - **Creating commits** (`commit`)
 - **Checkout commits** (`checkout`) - Navigate through project history
+- **Commit history** (`log`) - View commit history and messages
 - **Object storage** (blobs, trees, commits)
 - **Content-addressable storage** with SHA-1 hashing
 - **Branch management** (HEAD tracking)
@@ -44,6 +45,7 @@ echo "Hello World" > test.txt              # Create a file
 echo "Updated" > test.txt                   # Modify file
 ./pygit add test.txt                        # Stage changes
 ./pygit commit -m "Update"                  # Second commit
+./pygit log                                 # View commit history
 ./pygit checkout <first-commit-sha>         # Go back in time!
 
 # Alternative: Direct Python execution
@@ -59,6 +61,7 @@ echo "Updated" > test.txt                   # Modify file
 | `status` | Show working tree status | `./pygit status` |
 | `commit [-m <message>]` | Create commit from staged files | `./pygit commit -m "Add feature"` |
 | `checkout <commit-sha1>` | Restore files from specific commit | `./pygit checkout abc123...` |
+| `log` | Show commit history | `./pygit log` |
 | `hash-object [-w] <file>` | Hash file and optionally store | `./pygit hash-object -w file.txt` |
 | `cat-file [-t\|-s] <sha1>` | Show object content/type/size | `./pygit cat-file abc123...` |
 | `write-tree` | Create tree from working directory | `./pygit write-tree` |

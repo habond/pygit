@@ -230,3 +230,65 @@ def checkout_command(commit_sha1: str) -> None:
         print(f"Error: commit {commit_sha1} not found")
     except Exception as e:
         print(f"Error during checkout: {e}")
+
+
+def log_command() -> None:
+    """Show commit history starting from HEAD"""
+    try:
+        # Start from the current commit
+        current_commit = get_current_commit()
+        if not current_commit:
+            print("No commits found")
+            return
+
+        commit_sha = current_commit
+        while commit_sha:
+            # Get the commit object
+            obj_type, size, content = read_object(commit_sha)
+            if obj_type != "commit":
+                print(f"Error: {commit_sha} is not a commit object")
+                break
+
+            # Parse commit content
+            lines = content.decode().split("\n")
+            tree_sha = None
+            parent_sha = None
+            author = "Unknown"
+            message = ""
+            
+            # Parse commit headers and message
+            in_message = False
+            for line in lines:
+                if not in_message:
+                    if line.startswith("tree "):
+                        tree_sha = line.split()[1]
+                    elif line.startswith("parent "):
+                        parent_sha = line.split()[1]
+                    elif line.startswith("author "):
+                        # Format: author Name <email> timestamp timezone
+                        author_parts = line.split(" ", 1)
+                        if len(author_parts) > 1:
+                            author = author_parts[1]
+                    elif line == "":
+                        in_message = True
+                else:
+                    if line.strip():  # Skip empty lines in message
+                        if message:
+                            message += " " + line.strip()
+                        else:
+                            message = line.strip()
+
+            # Display commit info in git log format
+            print(f"commit {commit_sha}")
+            print(f"Author: {author}")
+            print()
+            print(f"    {message}")
+            print()
+
+            # Move to parent commit
+            commit_sha = parent_sha
+
+    except FileNotFoundError:
+        print("Error: repository not initialized or corrupted")
+    except Exception as e:
+        print(f"Error reading commit history: {e}")

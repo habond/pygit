@@ -13,6 +13,7 @@ from .commands import (
     commit_command,
     commit_tree_command,
     hash_object_command,
+    log_command,
     ls_tree_command,
     status_command,
     write_tree_command,
@@ -37,6 +38,7 @@ def main() -> None:
         print("  status - Show working tree status")
         print("  commit [-m <message>] - Create a commit from staged files")
         print("  checkout <commit-sha1> - Checkout files from a specific commit")
+        print("  log - Show commit history")
         return
 
     command = sys.argv[1]
@@ -148,5 +150,7 @@ def main() -> None:
             return
         commit_sha1 = sys.argv[2]
         checkout_command(commit_sha1)
+    elif command == "log":
+        log_command()
     else:
         print(f"Unknown command: {command}")
