@@ -201,7 +201,7 @@ def checkout_command(commit_sha1: str) -> None:
             return
 
         entries = parse_tree_object(tree_content)
-        
+
         # Clear working directory (except .pygit)
         for item in Path(".").iterdir():
             if item.name.startswith("."):
@@ -210,6 +210,7 @@ def checkout_command(commit_sha1: str) -> None:
                 item.unlink()
             elif item.is_dir():
                 import shutil
+
                 shutil.rmtree(item)
 
         # Restore files from the tree
@@ -226,7 +227,7 @@ def checkout_command(commit_sha1: str) -> None:
 
         print(f"Checked out commit {commit_sha1}")
 
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         print(f"Error: commit {commit_sha1} not found")
     except Exception as e:
         print(f"Error during checkout: {e}")
@@ -241,7 +242,7 @@ def log_command() -> None:
             print("No commits found")
             return
 
-        commit_sha = current_commit
+        commit_sha: Optional[str] = current_commit
         while commit_sha:
             # Get the commit object
             obj_type, size, content = read_object(commit_sha)
@@ -251,17 +252,16 @@ def log_command() -> None:
 
             # Parse commit content
             lines = content.decode().split("\n")
-            tree_sha = None
             parent_sha = None
             author = "Unknown"
             message = ""
-            
+
             # Parse commit headers and message
             in_message = False
             for line in lines:
                 if not in_message:
                     if line.startswith("tree "):
-                        tree_sha = line.split()[1]
+                        pass  # We don't need the tree SHA for log display
                     elif line.startswith("parent "):
                         parent_sha = line.split()[1]
                     elif line.startswith("author "):

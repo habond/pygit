@@ -42,13 +42,14 @@ def write_index(index: Dict[str, str]) -> None:
 def add_to_index(filepath: str) -> None:
     """Add a file to the staging area or stage its deletion"""
     index = read_index()
-    
+
     if not Path(filepath).exists():
         # Check if file was previously tracked (in index or in current commit)
         from .repository import get_current_tree_entries
+
         current_tree_entries = get_current_tree_entries()
         filename = Path(filepath).name
-        
+
         if filepath in index or filename in current_tree_entries:
             # File was tracked but now deleted - stage deletion with special marker
             index[filepath] = "DELETED"
