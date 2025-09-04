@@ -25,6 +25,9 @@ cd pygit
 # Install development dependencies
 pip install -r requirements.txt
 
+# Install pre-commit hooks (recommended)
+pre-commit install
+
 # Run tests to verify setup
 pytest tests/ -v
 
@@ -77,6 +80,7 @@ pygit/
 ├── pytest.ini            # Pytest configuration
 ├── mypy.ini              # MyPy type checking configuration
 ├── .flake8              # Flake8 linting configuration
+├── .pre-commit-config.yaml # Pre-commit hooks configuration
 ├── pygit                 # Executable wrapper script for easy usage
 ├── LICENSE              # MIT license
 ├── README.md           # User documentation  
@@ -206,6 +210,7 @@ Command-line argument parsing and dispatching:
 - **Linting**: Code style enforced with `flake8` 
 - **Formatting**: Consistent style with `black`
 - **Testing**: Comprehensive test coverage required
+- **Pre-commit Hooks**: Automatic quality checks before commits
 
 ### Adding New Features
 
@@ -226,6 +231,27 @@ Command-line argument parsing and dispatching:
    - Ensure all tests pass
 
 5. **Documentation**: Update README.md and this CLAUDE.md
+
+### Pre-commit Hooks
+The project uses pre-commit hooks to maintain code quality:
+
+```bash
+# Install hooks (one-time setup)
+pre-commit install
+
+# Run hooks manually on all files
+pre-commit run --all-files
+
+# Hooks run automatically on git commit
+```
+
+**Configured Hooks**:
+- **Black**: Code formatting
+- **Flake8**: Linting and style checking  
+- **MyPy**: Type checking
+- **Pytest**: Run all tests
+
+If any hook fails, the commit is blocked until issues are resolved.
 
 ### Common Patterns
 
