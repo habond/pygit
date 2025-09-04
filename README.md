@@ -188,4 +188,4 @@ Educational project - feel free to learn from and modify!
 
 ---
 
-*Built as a learning exercise to understand Git internals* ⚡# Test change
+*Built as a learning exercise to understand Git internals* ⚡
