@@ -9,6 +9,7 @@ import sys
 from .commands import (
     add_command,
     cat_file_command,
+    checkout_command,
     commit_command,
     commit_tree_command,
     hash_object_command,
@@ -35,6 +36,7 @@ def main() -> None:
         print("  add <file> - Add a file to the staging area")
         print("  status - Show working tree status")
         print("  commit [-m <message>] - Create a commit from staged files")
+        print("  checkout <commit-sha1> - Checkout files from a specific commit")
         return
 
     command = sys.argv[1]
@@ -140,5 +142,11 @@ def main() -> None:
             message = input("Commit message: ")
 
         commit_command(message)
+    elif command == "checkout":
+        if len(sys.argv) < 3:
+            print("Usage: python main.py checkout <commit-sha1>")
+            return
+        commit_sha1 = sys.argv[2]
+        checkout_command(commit_sha1)
     else:
         print(f"Unknown command: {command}")

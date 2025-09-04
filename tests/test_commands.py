@@ -12,6 +12,7 @@ from src.commands import (
     add_command,
     status_command,
     commit_command,
+    checkout_command,
 )
 from src.repository import init_repository
 from src.objects import hash_object, read_object
@@ -175,3 +176,48 @@ def test_commit_command_with_parent(initialized_repo: Path, multiple_files: list
     captured = capsys.readouterr()
     assert "Created commit" in captured.out
     assert "Parent:" in captured.out
+
+
+def test_checkout_command_invalid_commit(initialized_repo: Path, capsys) -> None:
+    """Test checkout command with invalid commit hash."""
+    fake_hash = "a" * 40
+    checkout_command(fake_hash)
+    
+    captured = capsys.readouterr()
+    assert "not found" in captured.out
+
+
+def test_checkout_command_success(initialized_repo: Path, sample_file: Path, capsys) -> None:
+    """Test successful checkout command."""
+    # Create a commit first
+    add_command(str(sample_file))
+    commit_command("Test commit")
+    captured = capsys.readouterr()
+    
+    # Extract commit hash from output
+    lines = captured.out.split("\n")
+    commit_line = next(line for line in lines if "Created commit" in line)
+    commit_hash = commit_line.split()[-1]
+    
+    # Modify the file
+    sample_file.write_text("modified content")
+    
+    # Checkout the commit
+    checkout_command(commit_hash)
+    
+    captured = capsys.readouterr()
+    assert f"Checked out commit {commit_hash}" in captured.out
+    
+    # File should be restored to original content
+    assert sample_file.read_text() == "Hello, PyGit testing!"
+
+
+def test_checkout_command_not_a_commit(initialized_repo: Path, sample_file: Path, capsys) -> None:
+    """Test checkout command with a blob hash instead of commit."""
+    # Create a blob
+    blob_hash = hash_object(sample_file.read_bytes(), "blob", write=True)
+    
+    checkout_command(blob_hash)
+    
+    captured = capsys.readouterr()
+    assert "is not a commit object" in captured.out

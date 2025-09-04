@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# PyGit - A basic Git implementation in Python
+# Wrapper script to simplify command execution
+
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Set PYTHONPATH to the project root and run the command
+PYTHONPATH="$SCRIPT_DIR" python3 -m src.main "$@"

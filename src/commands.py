@@ -171,3 +171,62 @@ def commit_command(message: str = "") -> None:
     print(f"Created commit {commit_sha1}")
     if parent_sha1:
         print(f"Parent: {parent_sha1}")
+
+
+def checkout_command(commit_sha1: str) -> None:
+    """Checkout files from a specific commit"""
+    try:
+        # Get the commit object
+        obj_type, size, content = read_object(commit_sha1)
+        if obj_type != "commit":
+            print(f"Error: {commit_sha1} is not a commit object")
+            return
+
+        # Parse commit to get tree SHA
+        lines = content.decode().split("\n")
+        tree_sha = None
+        for line in lines:
+            if line.startswith("tree "):
+                tree_sha = line.split()[1]
+                break
+
+        if not tree_sha:
+            print("Error: commit has no tree")
+            return
+
+        # Get tree entries
+        obj_type, size, tree_content = read_object(tree_sha)
+        if obj_type != "tree":
+            print("Error: invalid tree object")
+            return
+
+        entries = parse_tree_object(tree_content)
+        
+        # Clear working directory (except .pygit)
+        for item in Path(".").iterdir():
+            if item.name.startswith("."):
+                continue
+            if item.is_file():
+                item.unlink()
+            elif item.is_dir():
+                import shutil
+                shutil.rmtree(item)
+
+        # Restore files from the tree
+        for entry in entries:
+            if entry["mode"] == "40000":  # Directory
+                # For now, skip directories - this is a basic implementation
+                continue
+            else:  # Regular file
+                # Get the blob content
+                blob_type, blob_size, blob_content = read_object(entry["sha1"])
+                if blob_type == "blob":
+                    with open(entry["name"], "wb") as f:
+                        f.write(blob_content)
+
+        print(f"Checked out commit {commit_sha1}")
+
+    except FileNotFoundError as e:
+        print(f"Error: commit {commit_sha1} not found")
+    except Exception as e:
+        print(f"Error during checkout: {e}")

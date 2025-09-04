@@ -15,9 +15,11 @@ A basic Git implementation in Python built for educational purposes. This projec
 - **File staging** (`add`) 
 - **Status checking** (`status`)
 - **Creating commits** (`commit`)
+- **Checkout commits** (`checkout`) - Navigate through project history
 - **Object storage** (blobs, trees, commits)
 - **Content-addressable storage** with SHA-1 hashing
 - **Branch management** (HEAD tracking)
+- **Low-level operations** (`hash-object`, `cat-file`, `write-tree`, `ls-tree`, `commit-tree`)
 
 ## Installation & Usage
 
@@ -31,41 +33,50 @@ A basic Git implementation in Python built for educational purposes. This projec
 git clone <repository-url>
 cd pygit
 
-# Run PyGit commands
-python3 src/main.py init                    # Initialize repository
+# Run PyGit commands (using wrapper script)
+./pygit init                                # Initialize repository
 echo "Hello World" > test.txt              # Create a file
-python3 src/main.py add test.txt           # Stage the file
-python3 src/main.py status                 # Check status
-python3 src/main.py commit -m "First!"     # Create commit
+./pygit add test.txt                        # Stage the file
+./pygit status                              # Check status
+./pygit commit -m "First!"                  # Create commit
+
+# Navigate history 
+echo "Updated" > test.txt                   # Modify file
+./pygit add test.txt                        # Stage changes
+./pygit commit -m "Update"                  # Second commit
+./pygit checkout <first-commit-sha>         # Go back in time!
+
+# Alternative: Direct Python execution
+# PYTHONPATH=. python3 -m src.main <command>
 ```
 
 ## Commands
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `init [path]` | Initialize new repository | `python3 src/main.py init` |
-| `add <file>` | Stage file for commit | `python3 src/main.py add file.txt` |
-| `status` | Show working tree status | `python3 src/main.py status` |
-| `commit [-m <message>]` | Create commit from staged files | `python3 src/main.py commit -m "Add feature"` |
-| `hash-object [-w] <file>` | Hash file and optionally store | `python3 src/main.py hash-object -w file.txt` |
-| `cat-file [-t\|-s] <sha1>` | Show object content/type/size | `python3 src/main.py cat-file abc123...` |
-| `write-tree` | Create tree from working directory | `python3 src/main.py write-tree` |
-| `ls-tree <sha1>` | List tree contents | `python3 src/main.py ls-tree abc123...` |
-| `commit-tree <tree> [-m <msg>] [-p <parent>]` | Create commit object | `python3 src/main.py commit-tree abc123 -m "msg"` |
+| `init [path]` | Initialize new repository | `./pygit init` |
+| `add <file>` | Stage file for commit | `./pygit add file.txt` |
+| `status` | Show working tree status | `./pygit status` |
+| `commit [-m <message>]` | Create commit from staged files | `./pygit commit -m "Add feature"` |
+| `checkout <commit-sha1>` | Restore files from specific commit | `./pygit checkout abc123...` |
+| `hash-object [-w] <file>` | Hash file and optionally store | `./pygit hash-object -w file.txt` |
+| `cat-file [-t\|-s] <sha1>` | Show object content/type/size | `./pygit cat-file abc123...` |
+| `write-tree` | Create tree from working directory | `./pygit write-tree` |
+| `ls-tree <sha1>` | List tree contents | `./pygit ls-tree abc123...` |
+| `commit-tree <tree> [-m <msg>] [-p <parent>]` | Create commit object | `./pygit commit-tree abc123 -m "msg"` |
 
 ## Architecture 🏗️
 
 ### Project Structure
 ```
 src/
+├── __init__.py          # Package metadata  
 ├── main.py              # Entry point
-└── pygit/               # Main package
-    ├── __init__.py      # Package metadata
-    ├── objects.py       # Git objects (blobs, trees, commits)
-    ├── index.py         # Staging area management
-    ├── repository.py    # Repository & branch operations
-    ├── commands.py      # Command implementations
-    └── cli.py           # CLI argument parsing
+├── objects.py           # Git objects (blobs, trees, commits)
+├── index.py             # Staging area management
+├── repository.py        # Repository & branch operations
+├── commands.py          # Command implementations
+└── cli.py               # CLI argument parsing
 
 tests/                   # Comprehensive test suite
 ├── conftest.py         # Pytest fixtures
