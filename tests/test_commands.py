@@ -6,15 +6,15 @@ from pathlib import Path
 from io import StringIO
 import sys
 
-from src.pygit.commands import (
+from src.commands import (
     hash_object_command,
     cat_file_command,
     add_command,
     status_command,
     commit_command,
 )
-from src.pygit.repository import init_repository
-from src.pygit.objects import hash_object, read_object
+from src.repository import init_repository
+from src.objects import hash_object, read_object
 
 
 def test_hash_object_command_file_not_found(temp_repo: Path, capsys) -> None:
@@ -92,7 +92,7 @@ def test_cat_file_command_show_size(initialized_repo: Path, sample_file: Path, c
 
 def test_add_command(initialized_repo: Path, sample_file: Path) -> None:
     """Test add command."""
-    from src.pygit.index import read_index
+    from src.index import read_index
     
     # Initially index should be empty
     assert read_index() == {}
@@ -158,7 +158,7 @@ def test_commit_command_success(initialized_repo: Path, sample_file: Path, capsy
     assert "Created commit" in captured.out
     
     # Should clear the index
-    from src.pygit.index import read_index
+    from src.index import read_index
     assert read_index() == {}
 
 

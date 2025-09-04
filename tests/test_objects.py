@@ -5,7 +5,7 @@ Tests for the objects module.
 import pytest
 from pathlib import Path
 
-from src.pygit.objects import (
+from src.objects import (
     hash_object,
     read_object,
     create_tree_object,

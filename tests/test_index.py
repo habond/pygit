@@ -4,13 +4,13 @@ Tests for the index module.
 
 from pathlib import Path
 
-from src.pygit.index import (
+from src.index import (
     read_index,
     write_index,
     add_to_index,
     create_tree_from_index,
 )
-from src.pygit.objects import hash_object, read_object
+from src.objects import hash_object, read_object
 
 
 def test_read_index_no_file(initialized_repo: Path) -> None:

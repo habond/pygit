@@ -34,7 +34,7 @@ def initialized_repo(temp_repo: Path) -> Path:
     """
     Create a temporary directory with an initialized pygit repository.
     """
-    from src.pygit.repository import init_repository
+    from src.repository import init_repository
     
     init_repository()
     return temp_repo

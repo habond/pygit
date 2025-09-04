@@ -4,13 +4,13 @@ Tests for the repository module.
 
 from pathlib import Path
 
-from src.pygit.repository import (
+from src.repository import (
     init_repository,
     get_current_commit,
     update_branch,
     get_current_tree_entries,
 )
-from src.pygit.objects import hash_object, create_tree_object, create_commit_object
+from src.objects import hash_object, create_tree_object, create_commit_object
 
 
 def test_init_repository(temp_repo: Path) -> None:

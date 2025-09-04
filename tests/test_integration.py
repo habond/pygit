@@ -6,10 +6,10 @@ These tests simulate real user workflows.
 
 from pathlib import Path
 
-from src.pygit.repository import init_repository, get_current_commit
-from src.pygit.commands import add_command, commit_command, status_command
-from src.pygit.index import read_index
-from src.pygit.objects import read_object, parse_tree_object
+from src.repository import init_repository, get_current_commit
+from src.commands import add_command, commit_command, status_command
+from src.index import read_index
+from src.objects import read_object, parse_tree_object
 
 
 def test_basic_workflow(temp_repo: Path, capsys) -> None:
