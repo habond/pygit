@@ -1,5 +1,12 @@
 # PyGit 🚀
 
+[![Tests](https://github.com/habond/pygit/actions/workflows/test.yml/badge.svg)](https://github.com/habond/pygit/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/habond/pygit/branch/main/graph/badge.svg)](https://codecov.io/gh/habond/pygit)
+[![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A basic Git implementation in Python built for educational purposes. This project demonstrates the core concepts and data structures that make Git work.
 
 ## Features ✨
