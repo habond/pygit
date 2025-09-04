@@ -283,3 +283,52 @@ def test_log_command_multiple_commits(initialized_repo: Path, multiple_files: li
     first_commit_pos = captured.out.find("First commit")
     second_commit_pos = captured.out.find("Second commit")
     assert second_commit_pos < first_commit_pos
+
+
+def test_add_command_file_deletion(initialized_repo: Path, sample_file: Path, capsys) -> None:
+    """Test add command stages file deletion correctly."""
+    # First add and commit the file
+    add_command(str(sample_file))
+    commit_command("Add file")
+    
+    # Clear captured output
+    capsys.readouterr()
+    
+    # Delete the file from filesystem  
+    sample_file.unlink()
+    
+    # Try to add the deleted file - should stage deletion
+    add_command(str(sample_file))
+    
+    captured = capsys.readouterr()
+    assert "Staged deletion of" in captured.out
+    assert str(sample_file) in captured.out
+
+
+def test_add_command_file_deletion_not_tracked(initialized_repo: Path, capsys) -> None:
+    """Test add command with non-existent file that was never tracked."""
+    # Try to add a file that never existed
+    add_command("never_existed.txt")
+    
+    captured = capsys.readouterr()
+    assert "Error: file 'never_existed.txt' not found" in captured.out
+
+
+def test_commit_with_file_deletion(initialized_repo: Path, sample_file: Path, capsys) -> None:
+    """Test commit handles file deletions properly.""" 
+    # Add and commit a file
+    add_command(str(sample_file))
+    commit_command("Add file")
+    
+    # Delete file and stage deletion
+    sample_file.unlink()
+    add_command(str(sample_file))
+    
+    # Commit the deletion
+    commit_command("Delete file")
+    
+    captured = capsys.readouterr()
+    assert "Created commit" in captured.out
+    
+    # Verify file is no longer in working directory
+    assert not sample_file.exists()

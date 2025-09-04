@@ -40,10 +40,24 @@ def write_index(index: Dict[str, str]) -> None:
 
 
 def add_to_index(filepath: str) -> None:
-    """Add a file to the staging area"""
+    """Add a file to the staging area or stage its deletion"""
+    index = read_index()
+    
     if not Path(filepath).exists():
-        print(f"Error: file '{filepath}' not found")
-        return
+        # Check if file was previously tracked (in index or in current commit)
+        from .repository import get_current_tree_entries
+        current_tree_entries = get_current_tree_entries()
+        filename = Path(filepath).name
+        
+        if filepath in index or filename in current_tree_entries:
+            # File was tracked but now deleted - stage deletion with special marker
+            index[filepath] = "DELETED"
+            write_index(index)
+            print(f"Staged deletion of '{filepath}'")
+            return
+        else:
+            print(f"Error: file '{filepath}' not found")
+            return
 
     # Hash the file as a blob and store it
     with open(filepath, "rb") as f:
@@ -52,7 +66,6 @@ def add_to_index(filepath: str) -> None:
     sha1 = hash_object(content, "blob", write=True)
 
     # Update index
-    index = read_index()
     index[filepath] = sha1
     write_index(index)
 
@@ -66,10 +79,14 @@ def create_tree_from_index(current_tree_entries: Dict[str, str]) -> str:
     # Start with current tree entries (all previously committed files)
     merged_entries = current_tree_entries.copy()
 
-    # Update with staged changes
+    # Update with staged changes (skip deleted files)
     for filepath, sha1 in index.items():
         filename = Path(filepath).name
-        merged_entries[filename] = sha1
+        if sha1 == "DELETED":
+            # File is staged for deletion, remove it from merged_entries
+            merged_entries.pop(filename, None)
+        else:
+            merged_entries[filename] = sha1
 
     if not merged_entries:
         return hash_object(b"", "tree", write=True)
