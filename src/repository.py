@@ -9,6 +9,9 @@ from typing import Dict, Optional
 
 from .objects import read_object, parse_tree_object
 
+# Type alias for tree filename -> sha1 mappings
+TreeMapping = Dict[str, str]
+
 
 def init_repository(path: str = ".") -> None:
     """Initialize a new pygit repository"""
@@ -75,7 +78,7 @@ def update_branch(commit_sha1: str) -> None:
             f.write(commit_sha1 + "\n")
 
 
-def get_current_tree_entries() -> Dict[str, str]:
+def get_current_tree_entries() -> TreeMapping:
     """Get entries from the current commit's tree"""
     current_commit = get_current_commit()
     if not current_commit:
@@ -83,12 +86,12 @@ def get_current_tree_entries() -> Dict[str, str]:
 
     try:
         # Get the commit object
-        obj_type, size, content = read_object(current_commit)
-        if obj_type != "commit":
+        commit_obj = read_object(current_commit)
+        if commit_obj["type"] != "commit":
             return {}
 
         # Parse commit to get tree SHA
-        lines = content.decode().split("\n")
+        lines = commit_obj["content"].decode().split("\n")
         tree_sha = None
         for line in lines:
             if line.startswith("tree "):
@@ -99,11 +102,11 @@ def get_current_tree_entries() -> Dict[str, str]:
             return {}
 
         # Get tree entries
-        obj_type, size, tree_content = read_object(tree_sha)
-        if obj_type != "tree":
+        tree_obj = read_object(tree_sha)
+        if tree_obj["type"] != "tree":
             return {}
 
-        entries = parse_tree_object(tree_content)
+        entries = parse_tree_object(tree_obj["content"])
         result = {}
         for entry in entries:
             result[entry["name"]] = entry["sha1"]

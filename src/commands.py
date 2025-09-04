@@ -14,6 +14,7 @@ from .objects import (
     create_tree_object,
     parse_tree_object,
     create_commit_object,
+    TreeEntry,
 )
 from .repository import get_current_commit, update_branch, get_current_tree_entries
 
@@ -36,14 +37,14 @@ def cat_file_command(
 ) -> None:
     """Display the contents of a git object"""
     try:
-        obj_type, size, content = read_object(sha1)
+        obj = read_object(sha1)
 
         if show_type:
-            print(obj_type)
+            print(obj["type"])
         elif show_size:
-            print(size)
+            print(obj["size"])
         else:
-            print(content.decode(), end="")
+            print(obj["content"].decode(), end="")
     except FileNotFoundError as e:
         print(f"Error: {e}")
     except Exception as e:
@@ -64,13 +65,13 @@ def write_tree_command(directory: str = ".") -> str:
                 content = f.read()
             sha1 = hash_object(content, "blob", write=True)
             entries.append(
-                {"mode": "100644", "name": item.name, "sha1": sha1}  # regular file
+                TreeEntry(mode="100644", name=item.name, sha1=sha1)  # regular file
             )
         elif item.is_dir():
             # Recursively create tree for subdirectory
             subtree_sha1 = write_tree_command(str(item))
             entries.append(
-                {"mode": "40000", "name": item.name, "sha1": subtree_sha1}  # directory
+                TreeEntry(mode="40000", name=item.name, sha1=subtree_sha1)  # directory
             )
 
     if entries:
@@ -83,13 +84,13 @@ def write_tree_command(directory: str = ".") -> str:
 def ls_tree_command(sha1: str) -> None:
     """List the contents of a tree object"""
     try:
-        obj_type, size, content = read_object(sha1)
+        obj = read_object(sha1)
 
-        if obj_type != "tree":
+        if obj["type"] != "tree":
             print(f"Error: {sha1} is not a tree object")
             return
 
-        entries = parse_tree_object(content)
+        entries = parse_tree_object(obj["content"])
         for entry in entries:
             mode = entry["mode"]
             obj_sha1 = entry["sha1"]
@@ -177,13 +178,13 @@ def checkout_command(commit_sha1: str) -> None:
     """Checkout files from a specific commit"""
     try:
         # Get the commit object
-        obj_type, size, content = read_object(commit_sha1)
-        if obj_type != "commit":
+        obj = read_object(commit_sha1)
+        if obj["type"] != "commit":
             print(f"Error: {commit_sha1} is not a commit object")
             return
 
         # Parse commit to get tree SHA
-        lines = content.decode().split("\n")
+        lines = obj["content"].decode().split("\n")
         tree_sha = None
         for line in lines:
             if line.startswith("tree "):
@@ -195,12 +196,12 @@ def checkout_command(commit_sha1: str) -> None:
             return
 
         # Get tree entries
-        obj_type, size, tree_content = read_object(tree_sha)
-        if obj_type != "tree":
+        tree_obj = read_object(tree_sha)
+        if tree_obj["type"] != "tree":
             print("Error: invalid tree object")
             return
 
-        entries = parse_tree_object(tree_content)
+        entries = parse_tree_object(tree_obj["content"])
 
         # Clear working directory (except .pygit)
         for item in Path(".").iterdir():
@@ -220,10 +221,10 @@ def checkout_command(commit_sha1: str) -> None:
                 continue
             else:  # Regular file
                 # Get the blob content
-                blob_type, blob_size, blob_content = read_object(entry["sha1"])
-                if blob_type == "blob":
+                blob_obj = read_object(entry["sha1"])
+                if blob_obj["type"] == "blob":
                     with open(entry["name"], "wb") as f:
-                        f.write(blob_content)
+                        f.write(blob_obj["content"])
 
         print(f"Checked out commit {commit_sha1}")
 
@@ -245,13 +246,13 @@ def log_command() -> None:
         commit_sha: Optional[str] = current_commit
         while commit_sha:
             # Get the commit object
-            obj_type, size, content = read_object(commit_sha)
-            if obj_type != "commit":
+            commit_obj = read_object(commit_sha)
+            if commit_obj["type"] != "commit":
                 print(f"Error: {commit_sha} is not a commit object")
                 break
 
             # Parse commit content
-            lines = content.decode().split("\n")
+            lines = commit_obj["content"].decode().split("\n")
             parent_sha = None
             author = "Unknown"
             message = ""

@@ -7,10 +7,14 @@ Handles the staging area where files are prepared for commit.
 from pathlib import Path
 from typing import Dict
 
-from .objects import hash_object, create_tree_object
+from .objects import hash_object, create_tree_object, TreeEntry
+
+# Type aliases for different dict patterns
+IndexMapping = Dict[str, str]  # filepath -> sha1 (index entries)
+TreeMapping = Dict[str, str]  # filename -> sha1 (tree entries)
 
 
-def read_index() -> Dict[str, str]:
+def read_index() -> IndexMapping:
     """Read the index file (staging area)"""
     index_path = Path(".pygit/index")
 
@@ -30,7 +34,7 @@ def read_index() -> Dict[str, str]:
     return index
 
 
-def write_index(index: Dict[str, str]) -> None:
+def write_index(index: IndexMapping) -> None:
     """Write the index file (staging area)"""
     index_path = Path(".pygit/index")
 
@@ -73,7 +77,7 @@ def add_to_index(filepath: str) -> None:
     print(f"Added '{filepath}' to staging area")
 
 
-def create_tree_from_index(current_tree_entries: Dict[str, str]) -> str:
+def create_tree_from_index(current_tree_entries: TreeMapping) -> str:
     """Create a tree object from the current index, merged with current tree"""
     index = read_index()
 
@@ -94,6 +98,6 @@ def create_tree_from_index(current_tree_entries: Dict[str, str]) -> str:
 
     entries = []
     for filename, sha1 in merged_entries.items():
-        entries.append({"mode": "100644", "name": filename, "sha1": sha1})
+        entries.append(TreeEntry(mode="100644", name=filename, sha1=sha1))
 
     return create_tree_object(entries)

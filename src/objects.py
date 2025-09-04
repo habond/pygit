@@ -7,10 +7,31 @@ Handles blobs, trees, and commits - the core data structures of git.
 import hashlib
 import zlib
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional, TypedDict, Literal, cast
+
+# Git object types
+GitObjectType = Literal["blob", "tree", "commit"]
 
 
-def hash_object(data: bytes, obj_type: str = "blob", write: bool = False) -> str:
+class TreeEntry(TypedDict):
+    """A single entry in a Git tree object."""
+
+    mode: str  # File mode (e.g., "100644", "100755", "040000")
+    name: str  # File or directory name
+    sha1: str  # SHA-1 hash of the object
+
+
+class GitObject(TypedDict):
+    """A Git object with its type, size, and content."""
+
+    type: GitObjectType  # Object type (blob, tree, commit)
+    size: int  # Size of the content in bytes
+    content: bytes  # Raw object content
+
+
+def hash_object(
+    data: bytes, obj_type: GitObjectType = "blob", write: bool = False
+) -> str:
     """Create a git object hash from data"""
     # Git format: "<type> <size>\0<content>"
     header = f"{obj_type} {len(data)}".encode() + b"\0"
@@ -31,7 +52,7 @@ def hash_object(data: bytes, obj_type: str = "blob", write: bool = False) -> str
     return sha1
 
 
-def read_object(sha1: str) -> Tuple[str, int, bytes]:
+def read_object(sha1: str) -> GitObject:
     """Read and decompress an object from storage"""
     obj_file = Path(".pygit/objects") / sha1[:2] / sha1[2:]
 
@@ -49,11 +70,12 @@ def read_object(sha1: str) -> Tuple[str, int, bytes]:
     header = decompressed_data[:null_index].decode()
     content = decompressed_data[null_index + 1 :]
 
-    obj_type, size = header.split()
-    return obj_type, int(size), content
+    obj_type_str, size_str = header.split()
+    obj_type = cast(GitObjectType, obj_type_str)  # Trust that stored objects are valid
+    return GitObject(type=obj_type, size=int(size_str), content=content)
 
 
-def create_tree_object(entries: List[Dict[str, str]]) -> str:
+def create_tree_object(entries: List[TreeEntry]) -> str:
     """Create a tree object from a list of entries"""
     # Tree format: <mode> <name>\0<20-byte-sha1>
     tree_data = b""
@@ -71,7 +93,7 @@ def create_tree_object(entries: List[Dict[str, str]]) -> str:
     return hash_object(tree_data, "tree", write=True)
 
 
-def parse_tree_object(content: bytes) -> List[Dict[str, str]]:
+def parse_tree_object(content: bytes) -> List[TreeEntry]:
     """Parse tree object content into entries"""
     entries = []
     i = 0
@@ -89,7 +111,7 @@ def parse_tree_object(content: bytes) -> List[Dict[str, str]]:
         sha1_bytes = content[null_idx + 1 : null_idx + 21]
         sha1 = sha1_bytes.hex()
 
-        entries.append({"mode": mode, "name": name, "sha1": sha1})
+        entries.append(TreeEntry(mode=mode, name=name, sha1=sha1))
 
         i = null_idx + 21
 

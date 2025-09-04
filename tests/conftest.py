@@ -10,16 +10,16 @@ from typing import Generator
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore[misc]
 def temp_repo() -> Generator[Path, None, None]:
     """
     Create a temporary directory and change to it for testing.
-    
+
     This isolates each test in its own directory, so .pygit operations
     don't interfere with each other or the actual project.
     """
     original_cwd = os.getcwd()
-    
+
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
         os.chdir(temp_path)
@@ -29,18 +29,18 @@ def temp_repo() -> Generator[Path, None, None]:
             os.chdir(original_cwd)
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore[misc]
 def initialized_repo(temp_repo: Path) -> Path:
     """
     Create a temporary directory with an initialized pygit repository.
     """
     from src.repository import init_repository
-    
+
     init_repository()
     return temp_repo
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore[misc]
 def sample_file(temp_repo: Path) -> Path:
     """Create a sample file for testing."""
     sample_path = temp_repo / "sample.txt"
@@ -48,7 +48,7 @@ def sample_file(temp_repo: Path) -> Path:
     return sample_path
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore[misc]
 def multiple_files(temp_repo: Path) -> list[Path]:
     """Create multiple sample files for testing."""
     files = []
